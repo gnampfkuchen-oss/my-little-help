@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-my_little_help.egg-info/PKG-INFO
-my_little_help.egg-info/SOURCES.txt
-my_little_help.egg-info/dependency_links.txt
-my_little_help.egg-info/requires.txt
-my_little_help.egg-info/top_level.txt

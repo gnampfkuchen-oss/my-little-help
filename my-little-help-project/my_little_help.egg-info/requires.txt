@@ -1,4 +1,0 @@
-pgpy
-rapidfuzz
-pyspellchecker
-pysqlite3
