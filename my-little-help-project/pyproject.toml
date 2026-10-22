@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-little-help"  
+version = "0.1.0"
+authors = [
+  { name="Jurek Bach", email="jurek_bach@pm.me"},
+]
+description = "Some code for PyPi Projects to make stuff easier."
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pgpy",
+    "rapidfuzz",
+    "pyspellchecker",
+    "pysqlite3"
+]
+
+[project.urls]
+"GitHub" = "https://github.com/gnampfkuchen-oss"
+
+

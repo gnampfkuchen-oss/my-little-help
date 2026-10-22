@@ -1,0 +1,1 @@
+from .functions import is_similar, is_word, get_from_database, create_table, execute_sqlite_code, insert_to_table
