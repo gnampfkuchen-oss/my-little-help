@@ -100,6 +100,7 @@ is_valid = myLittleHelp.check_sign(pubkey_path="public.key", message_path="signe
 * rapidfuzz
 * pyspellchecker
 * pgpy
+* pysqlite3
 
 ## License
 
