@@ -1,9 +1,5 @@
 # my-little-help
 
-[![PyPI version](https://shields.io)](https://pypi.org)
-[![License: MIT](https://shields.io)](https://opensource.org)
-[![Python Versions](https://shields.io)](https://pypi.org)
-
 my-little-help is a Python utility library that provides simplified wrapper functions for rapidfuzz, pyspellchecker, sqlite3, and pgpy.
 
 ## Installation
