@@ -82,16 +82,16 @@ import myLittleHelp
 private_key, public_key = myLittleHelp.new_keys(name="John Doe", email="john@example.com")
 
 # Encrypt text using a public key file path
-encrypted_text = myLittleHelp.encode(text="Secret Message", pubkey_path="public.key")
+encrypted_text = myLittleHelp.encode(text="Secret Message", pubkey_path="public.asc")
 
 # Decrypt a message file using a private key file path
-decrypted_text = myLittleHelp.decode(privkey_path="private.key", message_path="encrypted.msg")
+decrypted_text = myLittleHelp.decode(privkey_path="private.asc", message_path="encrypted.asc")
 
 # Sign text using a private key file path
-signed_text = myLittleHelp.sign(text="Verified Message", privkey_path="private.key")
+signed_text = myLittleHelp.sign(text="Verified Message", privkey_path="private.asc")
 
 # Verify the signature of a message file using a public key file path
-is_valid = myLittleHelp.check_sign(pubkey_path="public.key", message_path="signed.msg")
+is_valid = myLittleHelp.check_sign(pubkey_path="public.asc", message_path="signed.asc")
 ```
 
 ## Requirements
