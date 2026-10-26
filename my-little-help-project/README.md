@@ -79,19 +79,67 @@ results = myLittleHelp.execute_sqlite_code(
 import myLittleHelp
 
 # Generate a new PGP private and public key pair string
-private_key, public_key = myLittleHelp.new_keys(name="John Doe", email="john@example.com")
+private_key, public_key = myLittleHelp.new_keys_pgpy(name="John Doe", email="john@example.com")
 
 # Encrypt text using a public key file path
-encrypted_text = myLittleHelp.encode(text="Secret Message", pubkey_path="public.asc")
+encrypted_text = myLittleHelp.encode_pgpy(text="Secret Message", pubkey_path="public.asc")
 
 # Decrypt a message file using a private key file path
-decrypted_text = myLittleHelp.decode(privkey_path="private.asc", message_path="encrypted.asc")
+decrypted_text = myLittleHelp.decode_pgpy(privkey_path="private.asc", message_path="encrypted.asc")
 
 # Sign text using a private key file path
-signed_text = myLittleHelp.sign(text="Verified Message", privkey_path="private.asc")
+signed_text = myLittleHelp.sign_pgpy(text="Verified Message", privkey_path="private.asc")
 
 # Verify the signature of a message file using a public key file path
-is_valid = myLittleHelp.check_sign(pubkey_path="public.asc", message_path="signed.asc")
+is_valid = myLittleHelp.check_sign_pgpy(pubkey_path="public.asc", message_path="signed.asc")
+```
+
+### Nostr Integration (nostr-sdk)
+
+```python
+import myLittleHelp
+import asyncio
+
+# Generate a new Nostr private and public key pair in both Hex and Bech32 formats
+keys = myLittleHelp.generate_nostr_keys()
+print(keys["private_key_bech32"])  # nsec...
+print(keys["public_key_bech32"])   # npub...
+
+# Encrypt a text offline using Nostr NIP-04 encryption
+encrypted_content = myLittleHelp.encrypt_with_nostr(
+    sender_priv_key="nsec...",
+    recipient_pub_key="npub...",
+    cleartext="Hello Nostr"
+)
+
+# Decrypt a Nostr NIP-04 message offline
+cleartext = myLittleHelp.decrypt_with_nostr(
+    my_priv_key="nsec...",
+    sender_pub_key="npub...",
+    encrypted_content=encrypted_content
+)
+
+# Send any text (Nostr-encrypted, PGP armor string, or plain text) via Nostr Relays
+async def send():
+    event_id = await myLittleHelp.send_via_nostr(
+        sender_priv_key="nsec...",
+        text_content=encrypted_content,
+        relays=["wss://relay.damus.io", "wss://nos.lol"]
+    )
+    print(f"Sent successfully! Event ID: {event_id}")
+
+asyncio.run(send())
+
+# Fetch raw text contents from a specific author via Nostr Relays
+async def fetch():
+    payloads = await myLittleHelp.fetch_from_nostr(
+        author_pub_key="npub...",
+        limit=5,
+        relays=["wss://relay.damus.io", "wss://nos.lol"]
+    )
+    print(payloads)  # Returns a list of raw strings
+
+asyncio.run(fetch())
 ```
 
 ## Requirements

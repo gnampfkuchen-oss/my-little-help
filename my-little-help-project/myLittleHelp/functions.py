@@ -90,7 +90,7 @@ def execute_sqlite_code(databasepath: str, code: str):
 import pgpy
 from pgpy.constants import KeyFlags
 
-def new_keys(name: str, email: str) -> tuple[str, str]:
+def new_keys_pgpy(name: str, email: str) -> tuple[str, str]:
     key = pgpy.PGPKey.new(pgpy.constants.PubKeyAlgorithm.RSAEncryptOrSign, 2048)
     uid = pgpy.PGPUID.new(name, email=email)
     key.add_uid(uid)
@@ -98,28 +98,28 @@ def new_keys(name: str, email: str) -> tuple[str, str]:
 
     return str(key), str(key.pubkey)
 
-def encode(text: str, pubkey_path: str) -> str:
+def encode_pgpy(text: str, pubkey_path: str) -> str:
     public_key, _ = pgpy.PGPKey.from_file(pubkey_path)
     message = pgpy.PGPMessage.new(text)
     encrypted_message = public_key.encrypt(message)
 
     return str(encrypted_message)
 
-def decode(privkey_path: str, message_path: str) -> str:
+def decode_pgpy(privkey_path: str, message_path: str) -> str:
     private_key, _ = pgpy.PGPKey.from_file(privkey_path)
     encrypted_message = pgpy.PGPMessage.from_file(message_path)
     decrypted_message = private_key.decrypt(encrypted_message)
 
     return str(decrypted_message)
 
-def sign(text: str ,privkey_path: str) -> str:
+def sign_pgpy(text: str ,privkey_path: str) -> str:
     private_key, _ = pgpy.PGPKey.from_file(privkey_path)
     message = pgpy.PGPMessage.new(text)
     message |= private_key.sign(message)
 
     return str(message)
 
-def check_sign(pubkey_path: str, message_path: str) -> bool:
+def check_sign_pgpy(pubkey_path: str, message_path: str) -> bool:
     public_key, _ = pgpy.PGPKey.from_file(pubkey_path)
     with open(message_path, 'r', encoding='utf-8') as f:
         file_text = f.read()
@@ -152,3 +152,69 @@ def check_sign(pubkey_path: str, message_path: str) -> bool:
     return False
 
 #------------------pgpy-----------------#
+#---------------nostr-sdk---------------#
+
+import asyncio
+from nostr_sdk import Keys, PublicKey, nip04_encrypt, nip04_decrypt, Client, EventBuilder, Filter
+
+def generate_nostr_keys() -> dict:
+    keys = Keys.generate()
+    
+    return {
+        "private_key_hex": keys.secret_key().to_hex(),
+        "public_key_hex": keys.public_key().to_hex(),
+        "private_key_bech32": keys.secret_key().to_bech32(),
+        "public_key_bech32": keys.public_key().to_bech32()
+    }
+
+def encrypt_with_nostr(sender_priv_key: str, recipient_pub_key: str, cleartext: str) -> str:
+    sender_keys = Keys.parse(sender_priv_key)
+    recipient_keys = PublicKey.parse(recipient_pub_key)
+    
+    return nip04_encrypt(sender_keys.secret_key(), recipient_keys, cleartext)
+
+def decrypt_with_nostr(my_priv_key: str, sender_pub_key: str, encrypted_content: str) -> str:
+    my_keys = Keys.parse(my_priv_key)
+    sender_keys = PublicKey.parse(sender_pub_key)
+    
+    return nip04_decrypt(my_keys.secret_key(), sender_keys, encrypted_content)
+
+async def send_via_nostr(sender_priv_key: str, text_content: str, relays: list[str] = None) -> str:
+    if relays is None:
+        relays = ["wss://relay.damus.io", "wss://nos.lol"]
+        
+    keys = Keys.parse(sender_priv_key)
+    client = Client(keys)
+    
+    for relay in relays:
+        await client.add_relay(relay)
+    await client.connect()
+    
+    event = EventBuilder.text_note(text_content, []).to_event(keys)
+    output = await client.send_event(event)
+    
+    await client.disconnect()
+    return output.id.to_hex()
+
+async def fetch_from_nostr(author_pub_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
+    if relays is None:
+        relays = ["wss://relay.damus.io", "wss://nos.lol"]
+        
+    tmp_client = Client(Keys.generate())
+    
+    for relay in relays:
+        await tmp_client.add_relay(relay)
+    await tmp_client.connect()
+    
+    author_pub = PublicKey.parse(author_pub_key)
+    filter_obj = Filter().kind(1).author(author_pub).limit(limit)
+    
+    events = await tmp_client.fetch_events([filter_obj], None)
+    await tmp_client.disconnect()
+    
+    return [event.content() for event in events]
+
+#---------------nostr-sdk---------------#
+
+
+
