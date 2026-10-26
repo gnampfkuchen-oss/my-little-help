@@ -233,6 +233,16 @@ async def fetch_to_nostr(receiver_pub_key: str, limit: int = 10, relays: list[st
 
 
 #---------------nostr-sdk---------------#
+#---------------threading---------------#
+
+import threading
+
+def new_thread(function: function) -> None:
+    tread = threading.Thread(function)
+    tread.start()
+    
+#---------------threading---------------#
+    
 
 
 
