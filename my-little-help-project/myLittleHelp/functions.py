@@ -105,9 +105,9 @@ def encode_pgpy(text: str, pubkey_path: str) -> str:
 
     return str(encrypted_message)
 
-def decode_pgpy(privkey_path: str, message_path: str) -> str:
+def decode_pgpy(privkey_path: str, message: str) -> str:
     private_key, _ = pgpy.PGPKey.from_file(privkey_path)
-    encrypted_message = pgpy.PGPMessage.from_file(message_path)
+    encrypted_message = message
     decrypted_message = private_key.decrypt(encrypted_message)
 
     return str(decrypted_message)
@@ -119,10 +119,9 @@ def sign_pgpy(text: str ,privkey_path: str) -> str:
 
     return str(message)
 
-def check_sign_pgpy(pubkey_path: str, message_path: str) -> bool:
+def check_sign_pgpy(pubkey_path: str, message: str) -> bool:
     public_key, _ = pgpy.PGPKey.from_file(pubkey_path)
-    with open(message_path, 'r', encoding='utf-8') as f:
-        file_text = f.read()
+    file_text = message
 
     try:
         signature = pgpy.PGPSignature.from_blob(file_text)

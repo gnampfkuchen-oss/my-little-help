@@ -1,1 +1,20 @@
-from .functions import is_similar, is_word, get_from_database, create_table, execute_sqlite_code, insert_to_table, check_sign_pgpy, decode_pgpy, encode_pgpy, new_keys_pgpy, sign_pgpy, decrypt_with_nostr, encrypt_with_nostr, fetch_from_nostr, generate_nostr_keys, send_via_nostr, fetch_my_nostr_messages
+from .functions import (
+    is_similar, 
+    is_word, 
+    get_from_database, 
+    create_table, 
+    execute_sqlite_code, 
+    insert_to_table, 
+    check_sign_pgpy, 
+    decode_pgpy, 
+    encode_pgpy, 
+    new_keys_pgpy, 
+    sign_pgpy, 
+    decrypt_with_nostr, 
+    encrypt_with_nostr, 
+    fetch_from_nostr, 
+    generate_nostr_keys, 
+    send_via_nostr, 
+    fetch_my_nostr_messages,
+    new_thread
+    )
