@@ -154,7 +154,6 @@ def check_sign_pgpy(pubkey_path: str, message_path: str) -> bool:
 #------------------pgpy-----------------#
 #---------------nostr-sdk---------------#
 
-import asyncio
 from nostr_sdk import Keys, PublicKey, nip04_encrypt, nip04_decrypt, Client, EventBuilder, Filter
 
 def generate_nostr_keys() -> dict:
@@ -213,6 +212,28 @@ async def fetch_from_nostr(author_pub_key: str, limit: int = 10, relays: list[st
     await tmp_client.disconnect()
     
     return [event.content() for event in events]
+
+async def fetch_to_nostr(receiver_pub_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
+    if relays is None:
+        relays = ["wss://relay.damus.io", "wss://nos.lol"]
+        
+    tmp_client = Client(Keys.generate())
+    
+    for relay in relays:
+        await tmp_client.add_relay(relay)
+    await tmp_client.connect()
+    
+    # Der öffentliche Schlüssel des Empfängers
+    receiver_pub = PublicKey.parse(receiver_pub_key)
+    
+    # Geändert: .author() wurde durch .pubkey() ersetzt, um nach dem 'p'-Tag (Empfänger) zu filtern
+    filter_obj = Filter().kind(1).pubkey(receiver_pub).limit(limit)
+    
+    events = await tmp_client.fetch_events([filter_obj], None)
+    await tmp_client.disconnect()
+    
+    return [event.content() for event in events]
+
 
 #---------------nostr-sdk---------------#
 
