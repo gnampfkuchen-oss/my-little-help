@@ -223,10 +223,7 @@ async def fetch_to_nostr(receiver_pub_key: str, limit: int = 10, relays: list[st
         await tmp_client.add_relay(relay)
     await tmp_client.connect()
     
-    # Der öffentliche Schlüssel des Empfängers
     receiver_pub = PublicKey.parse(receiver_pub_key)
-    
-    # Geändert: .author() wurde durch .pubkey() ersetzt, um nach dem 'p'-Tag (Empfänger) zu filtern
     filter_obj = Filter().kind(1).pubkey(receiver_pub).limit(limit)
     
     events = await tmp_client.fetch_events([filter_obj], None)
