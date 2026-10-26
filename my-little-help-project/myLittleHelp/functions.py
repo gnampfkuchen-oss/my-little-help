@@ -98,8 +98,8 @@ def new_keys_pgpy(name: str, email: str) -> tuple[str, str]:
 
     return str(key), str(key.pubkey)
 
-def encode_pgpy(text: str, pubkey_path: str) -> str:
-    public_key, _ = pgpy.PGPKey.from_file(pubkey_path)
+def encode_pgpy(text: str, pubkey: str) -> str:
+    public_key, _ = pubkey
     message = pgpy.PGPMessage.new(text)
     encrypted_message = public_key.encrypt(message)
 
@@ -119,8 +119,8 @@ def sign_pgpy(text: str ,privkey_path: str) -> str:
 
     return str(message)
 
-def check_sign_pgpy(pubkey_path: str, message: str) -> bool:
-    public_key, _ = pgpy.PGPKey.from_file(pubkey_path)
+def check_sign_pgpy(pubkey: str, message: str) -> bool:
+    public_key, _ = pubkey
     file_text = message
 
     try:
