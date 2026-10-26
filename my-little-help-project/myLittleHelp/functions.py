@@ -213,23 +213,23 @@ async def fetch_from_nostr(author_pub_key: str, limit: int = 10, relays: list[st
     
     return [event.content() for event in events]
 
-async def fetch_to_nostr(receiver_pub_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
+async def fetch_my_nostr_messages(my_priv_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
     if relays is None:
         relays = ["wss://relay.damus.io", "wss://nos.lol"]
         
-    tmp_client = Client(Keys.generate())
+    keys = Keys.parse(my_priv_key)
+    client = Client(keys)
     
     for relay in relays:
-        await tmp_client.add_relay(relay)
-    await tmp_client.connect()
+        await client.add_relay(relay)
+    await client.connect()
     
-    receiver_pub = PublicKey.parse(receiver_pub_key)
-    filter_obj = Filter().kind(1).pubkey(receiver_pub).limit(limit)
+    filter_obj = Filter().kind(1).pubkey(keys.public_key()).limit(limit)
+    events = await client.fetch_events([filter_obj], None)
     
-    events = await tmp_client.fetch_events([filter_obj], None)
-    await tmp_client.disconnect()
-    
+    await client.disconnect()
     return [event.content() for event in events]
+
 
 
 #---------------nostr-sdk---------------#

@@ -140,6 +140,16 @@ async def fetch():
     print(payloads)  # Returns a list of raw strings
 
 asyncio.run(fetch())
+
+async def fetch_my_mentions():
+    messages = await myLittleHelp.fetch_my_nostr_messages(
+        my_priv_key="nsec...",
+        limit=10,
+        relays=["wss://relay.damus.io", "wss://nos.lol"]
+    )
+    print(messages)
+
+asyncio.run(fetch_my_mentions())
 ```
 
 ## Requirements
