@@ -168,7 +168,7 @@ import time
 import hashlib
 from websocket import create_connection
 
-def senden(pubkey_hex: str, text: str, relay_url: str = "wss://relay.damus.io"):
+def send(pubkey_hex: str, text: str, relay_url: str = "wss://relay.damus.io"):
     
     event = {
         "pubkey": pubkey_hex,
@@ -191,7 +191,7 @@ def senden(pubkey_hex: str, text: str, relay_url: str = "wss://relay.damus.io"):
     except:
         pass
 
-def empfangen(pubkey_hex: str, relay_url: str = "wss://relay.damus.io", limit: int = 5):
+def get(pubkey_hex: str, relay_url: str = "wss://relay.damus.io", limit: int = 5):
     try:
         ws = create_connection(relay_url, sslopt={"cert_reqs": ssl.CERT_NONE})
         

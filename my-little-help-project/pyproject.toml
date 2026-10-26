@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "my-little-help"  
-version = "26.18"
+version = "26.19"
 authors = [
   { name="Jurek Bach", email="jurek_bach@pm.me"},
 ]
