@@ -151,87 +151,6 @@ def check_sign_pgpy(pubkey: str, message: str) -> bool:
     return False
 
 #------------------pgpy-----------------#
-#---------------nostr-sdk---------------#
-
-from nostr_sdk import Keys, PublicKey, nip04_encrypt, nip04_decrypt, Client, EventBuilder, Filter, ClientBuilder, NostrSigner
-from datetime import timedelta
-
-def generate_nostr_keys() -> dict:
-    keys = Keys.generate()
-    
-    return {
-        "private_key_hex": keys.secret_key().to_hex(),
-        "public_key_hex": keys.public_key().to_hex(),
-        "private_key_bech32": keys.secret_key().to_bech32(),
-        "public_key_bech32": keys.public_key().to_bech32()
-    }
-
-def encrypt_with_nostr(sender_priv_key: str, recipient_pub_key: str, cleartext: str) -> str:
-    sender_keys = Keys.parse(sender_priv_key)
-    recipient_keys = PublicKey.parse(recipient_pub_key)
-    
-    return nip04_encrypt(sender_keys.secret_key(), recipient_keys, cleartext)
-
-def decrypt_with_nostr(my_priv_key: str, sender_pub_key: str, encrypted_content: str) -> str:
-    my_keys = Keys.parse(my_priv_key)
-    sender_keys = PublicKey.parse(sender_pub_key)
-    
-    return nip04_decrypt(my_keys.secret_key(), sender_keys, encrypted_content)
-
-async def send_via_nostr(sender_priv_key: str, text_content: str, relays: list[str] = None) -> str:
-    if relays is None:
-        relays = ["wss://relay.damus.io", "wss://nos.lol"]
-        
-    keys = Keys.parse(sender_priv_key)
-    client = Client(keys)
-    
-    for relay in relays:
-        await client.add_relay(relay)
-    await client.connect()
-    
-    event = EventBuilder.text_note(text_content, []).to_event(keys)
-    output = await client.send_event(event)
-    
-    await client.disconnect()
-    return output.id.to_hex()
-
-async def fetch_from_nostr(author_pub_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
-    if relays is None:
-        relays = ["wss://relay.damus.io", "wss://nos.lol"]
-        
-    tmp_client = Client(Keys.generate())
-    
-    for relay in relays:
-        await tmp_client.add_relay(relay)
-    await tmp_client.connect()
-    
-    author_pub = PublicKey.parse(author_pub_key)
-    filter_obj = Filter().kind(1).author(author_pub).limit(limit)
-    
-    events = await tmp_client.fetch_events([filter_obj], None)
-    await tmp_client.disconnect()
-    
-    return [event.content() for event in events]
-
-async def fetch_my_nostr_messages(my_priv_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
-    if relays is None:
-        relays = ["wss://relay.damus.io", "wss://nos.lol"]
-    keys = Keys.parse(my_priv_key)
-    signer = NostrSigner.keys(keys)
-    client = ClientBuilder().signer(signer).build()
-    
-    for relay in relays:
-        await client.add_relay(relay)
-    await client.connect()
-    filter_obj = Filter().kind(1).pubkey(keys.public_key()).limit(limit)
-    events = await client.fetch_events([filter_obj], timedelta(seconds=10))
-    
-    await client.disconnect()
-    return [event.content() for event in events]
-
-
-
-#---------------nostr-sdk---------------#
 #---------------threading---------------#
 
 import threading
@@ -241,6 +160,66 @@ def new_thread(function: function) -> None:
     tread.start()
     
 #---------------threading---------------#
+#------------websocket-client-----------#
+
+import json
+import ssl
+import time
+import hashlib
+from websocket import create_connection
+
+def senden(pubkey_hex: str, text: str, relay_url: str = "wss://relay.damus.io"):
+    
+    event = {
+        "pubkey": pubkey_hex,
+        "created_at": int(time.time()),
+        "kind": 1,
+        "tags": [],
+        "content": text
+    }
+    
+    serialized = json.dumps([0, event["pubkey"], event["created_at"], event["kind"], event["tags"], event["content"]], separators=(',', ':'))
+    event["id"] = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
+    event["sig"] = "00" * 64 
+    
+    envelope = ["EVENT", event]
+    
+    try:
+        ws = create_connection(relay_url, sslopt={"cert_reqs": ssl.CERT_NONE})
+        ws.send(json.dumps(envelope))
+        ws.close()
+    except:
+        pass
+
+def empfangen(pubkey_hex: str, relay_url: str = "wss://relay.damus.io", limit: int = 5):
+    try:
+        ws = create_connection(relay_url, sslopt={"cert_reqs": ssl.CERT_NONE})
+        
+        sub_id = "mein_windows_abo"
+        filters = {
+            "authors": [pubkey_hex],
+            "kinds":1,
+            "limit": limit
+        }
+        
+        ws.send(json.dumps(["REQ", sub_id, filters]))
+        
+        events = []
+        ws.settimeout(2.0)
+        
+        while len(events) < limit:
+            raw_msg = ws.recv()
+            msg = json.loads(raw_msg)
+            
+            if isinstance(msg, list) and msg[0] == "EVENT" and msg[1] == sub_id:
+                events.append(msg[2])
+            elif isinstance(msg, list) and msg[0] == "EOSE":
+                break
+                
+        ws.close()
+        return events
+    except:
+        pass
     
 
 
