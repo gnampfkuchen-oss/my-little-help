@@ -153,7 +153,8 @@ def check_sign_pgpy(pubkey: str, message: str) -> bool:
 #------------------pgpy-----------------#
 #---------------nostr-sdk---------------#
 
-from nostr_sdk import Keys, PublicKey, nip04_encrypt, nip04_decrypt, Client, EventBuilder, Filter
+from nostr_sdk import Keys, PublicKey, nip04_encrypt, nip04_decrypt, Client, EventBuilder, Filter, ClientBuilder, NostrSigner
+from datetime import timedelta
 
 def generate_nostr_keys() -> dict:
     keys = Keys.generate()
@@ -215,16 +216,15 @@ async def fetch_from_nostr(author_pub_key: str, limit: int = 10, relays: list[st
 async def fetch_my_nostr_messages(my_priv_key: str, limit: int = 10, relays: list[str] = None) -> list[str]:
     if relays is None:
         relays = ["wss://relay.damus.io", "wss://nos.lol"]
-        
     keys = Keys.parse(my_priv_key)
-    client = Client(keys)
+    signer = NostrSigner.keys(keys)
+    client = ClientBuilder().signer(signer).build()
     
     for relay in relays:
         await client.add_relay(relay)
     await client.connect()
-    
     filter_obj = Filter().kind(1).pubkey(keys.public_key()).limit(limit)
-    events = await client.fetch_events([filter_obj], None)
+    events = await client.fetch_events([filter_obj], timedelta(seconds=10))
     
     await client.disconnect()
     return [event.content() for event in events]
