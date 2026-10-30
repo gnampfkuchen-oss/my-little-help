@@ -221,6 +221,61 @@ def get(pubkey_hex: str, relay_url: str = "wss://relay.damus.io", limit: int = 5
     except:
         pass
     
+#------------websocket-client-----------#
+#-----------------emails----------------#
 
 
 
+
+
+
+import smtplib
+import imaplib
+import email
+from email.message import EmailMessage
+from email.policy import default
+
+def send_email(smtp_server, port, sender_email, password, receiver_email, subject, text):
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg.set_content(text)
+
+    with smtplib.SMTP_SSL(smtp_server, port) as server:
+        server.login(sender_email, password)
+        server.send_message(msg)
+
+def receive_emails(imap_server, port, email_user, password, folder="INBOX", search_criteria="UNSEEN"):
+    emails_list = []
+    
+    with imaplib.IMAP4_SSL(imap_server, port) as mail:
+        mail.login(email_user, password)
+        mail.select(folder)
+        status, response_data = mail.search(None, search_criteria)
+        mail_ids = response_data[0].split()
+        
+        print(f"Gefundene E-Mails ({search_criteria}): {len(mail_ids)}")
+        for mail_id in mail_ids:
+            status, data = mail.fetch(mail_id, "(RFC822)")
+            raw_email = data[0][1]
+            msg = email.message_from_bytes(raw_email, policy=default)
+            body_content = ""
+            if msg.is_multipart():
+                for part in msg.walk():
+                    if part.get_content_type() == "text/plain":
+                        body_content = part.get_content()
+                        break
+            else:
+                body_content = msg.get_content()
+            emails_list.append({
+                "id": mail_id.decode(),
+                "from": msg["From"],
+                "subject": msg["Subject"],
+                "body": body_content.strip()
+            })
+            
+    return emails_list
+
+#-----------------emails----------------#
