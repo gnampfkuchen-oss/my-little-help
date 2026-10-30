@@ -160,68 +160,6 @@ def new_thread(function: function) -> None:
     tread.start()
     
 #---------------threading---------------#
-#------------websocket-client-----------#
-
-import json
-import ssl
-import time
-import hashlib
-from websocket import create_connection
-
-def send(pubkey_hex: str, text: str, relay_url: str = "wss://relay.damus.io"):
-    
-    event = {
-        "pubkey": pubkey_hex,
-        "created_at": int(time.time()),
-        "kind": 1,
-        "tags": [],
-        "content": text
-    }
-    
-    serialized = json.dumps([0, event["pubkey"], event["created_at"], event["kind"], event["tags"], event["content"]], separators=(',', ':'))
-    event["id"] = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
-    event["sig"] = "00" * 64 
-    
-    envelope = ["EVENT", event]
-    
-    try:
-        ws = create_connection(relay_url, sslopt={"cert_reqs": ssl.CERT_NONE})
-        ws.send(json.dumps(envelope))
-        ws.close()
-    except:
-        pass
-
-def get(pubkey_hex: str, relay_url: str = "wss://relay.damus.io", limit: int = 5):
-    try:
-        ws = create_connection(relay_url, sslopt={"cert_reqs": ssl.CERT_NONE})
-        
-        sub_id = "mein_windows_abo"
-        filters = {
-            "authors": [pubkey_hex],
-            "kinds":1,
-            "limit": limit
-        }
-        
-        ws.send(json.dumps(["REQ", sub_id, filters]))
-        
-        events = []
-        ws.settimeout(2.0)
-        
-        while len(events) < limit:
-            raw_msg = ws.recv()
-            msg = json.loads(raw_msg)
-            
-            if isinstance(msg, list) and msg[0] == "EVENT" and msg[1] == sub_id:
-                events.append(msg[2])
-            elif isinstance(msg, list) and msg[0] == "EOSE":
-                break
-                
-        ws.close()
-        return events
-    except:
-        pass
-    
-#------------websocket-client-----------#
 #-----------------emails----------------#
 
 

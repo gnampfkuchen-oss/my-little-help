@@ -10,8 +10,7 @@ from .functions import (
     encode_pgpy, 
     new_keys_pgpy, 
     sign_pgpy, 
-    create_connection,
-    get,
-    send,
-    new_thread
+    new_thread,
+    send_email,
+    receive_emails
     )
