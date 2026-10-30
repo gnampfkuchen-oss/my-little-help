@@ -99,7 +99,7 @@ def new_keys_pgpy(name: str, email: str) -> tuple[str, str]:
     return str(key), str(key.pubkey)
 
 def encode_pgpy(text: str, pubkey: str) -> str:
-    public_key, _ = pubkey
+    public_key, *_ = pubkey
     message = pgpy.PGPMessage.new(text)
     encrypted_message = public_key.encrypt(message)
 
