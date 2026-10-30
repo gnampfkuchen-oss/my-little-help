@@ -162,11 +162,6 @@ def new_thread(function: function) -> None:
 #---------------threading---------------#
 #-----------------emails----------------#
 
-
-
-
-
-
 import smtplib
 import imaplib
 import email
@@ -194,7 +189,6 @@ def receive_emails(imap_server, port, email_user, password, folder="INBOX", sear
         status, response_data = mail.search(None, search_criteria)
         mail_ids = response_data[0].split()
         
-        print(f"Gefundene E-Mails ({search_criteria}): {len(mail_ids)}")
         for mail_id in mail_ids:
             status, data = mail.fetch(mail_id, "(RFC822)")
             raw_email = data[0][1]
